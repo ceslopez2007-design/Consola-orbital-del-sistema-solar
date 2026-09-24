@@ -266,7 +266,7 @@ function loadRealTexture(url) {
   renderer.toneMappingExposure = 1.02;
 
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   /* ============================================================
      ESCENA
