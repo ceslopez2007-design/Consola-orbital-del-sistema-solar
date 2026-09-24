@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Solar 3D · Consola Orbital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene"></canvas>
+
+    <audio id="bg-audio" loop preload="auto" src="https://www.dropbox.com/scl/fi/j147e8bu15d9jphrggqrb/Space-song.mp3?rlkey=umy0gwfmzq4vyqsbdt20ot96a&st=as4gjv6e&dl=1"></audio>
+
+    <div class="hud">
+      <div class="brand">
+        <div class="eyebrow">● CONSOLA ORBITAL · SIMULACIÓN</div>
+        <h1>Sistema Solar</h1>
+      </div>
+      <div class="hud-right">
+        <div class="sim-counter">
+          <span>🕐</span>
+          T+ <strong id="sim-days">0</strong> días simulados
+        </div>
+      </div>
+    </div>
+
+    <div id="labels-layer"></div>
+
+    <div id="loader" class="loader">
+      <div class="loader-inner">
+        <span class="loader-dot"></span>
+        Cargando sistema solar...
+      </div>
+      <p id="loader-fact" class="loader-fact"></p>
+    </div>
+
+    <aside id="info-panel" class="info-panel">
+      <button id="ip-close" class="info-close" aria-label="Cerrar">×</button>
+      <div class="info-head">
+        <div id="ip-swatch" class="info-swatch"></div>
+        <div>
+          <div id="ip-eyebrow" class="info-eyebrow"></div>
+          <div class="info-name-row">
+            <h2 id="ip-name"></h2>
+            <button id="ip-speak" class="speak-icon-btn" title="Leer descripción" aria-label="Leer descripción">🔊</button>
+          </div>
+        </div>
+      </div>
+      <p id="ip-desc" class="info-desc"></p>
+      <div id="ip-stats" class="info-stats"></div>
+
+      <button id="ip-compare" class="compare-trigger">⇄ Comparar con otro planeta</button>
+      <button id="ip-fps" class="compare-trigger">👁 Ver en primera persona</button>
+      <button id="ip-missions" class="compare-trigger">🛰 Misiones espaciales</button>
+      <button id="ip-card" class="compare-trigger">🃏 Generar tarjeta coleccionable</button>
+    </aside>
+
+    <div id="compare-overlay" class="compare-overlay">
+      <div class="compare-box">
+        <button id="compare-close" class="info-close" aria-label="Cerrar">×</button>
+        <div class="compare-eyebrow">COMPARADOR · SISTEMA SOLAR</div>
+
+        <div class="compare-columns">
+          <div class="compare-col">
+            <div id="compare-swatch-a" class="compare-swatch"></div>
+            <h3 id="compare-name-a"></h3>
+          </div>
+
+          <div class="compare-col compare-col-b">
+            <div id="compare-swatch-b" class="compare-swatch compare-swatch-empty"></div>
+            <label for="compare-select" class="sr-only">Seleccionar planeta para comparar</label>
+            <select id="compare-select" title="Seleccionar planeta para comparar">
+              <option value="">Elegir planeta…</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="compare-stats" class="compare-stats"></div>
+      </div>
+    </div>
+
+    <div id="missions-overlay" class="compare-overlay">
+      <div class="compare-box missions-box">
+        <button id="missions-close" class="info-close" aria-label="Cerrar">×</button>
+        <div class="compare-eyebrow">MISIONES ESPACIALES</div>
+        <h3 id="missions-title" class="missions-title"></h3>
+        <div id="missions-timeline" class="missions-timeline"></div>
+      </div>
+    </div>
+
+    <div id="temp-overlay" class="compare-overlay">
+      <div class="compare-box missions-box">
+        <button id="temp-close" class="info-close" aria-label="Cerrar">×</button>
+        <div class="compare-eyebrow">COMPARADOR DE TEMPERATURAS</div>
+        <h3 class="missions-title">Temperatura media por planeta</h3>
+        <div id="temp-chart" class="temp-chart"></div>
+      </div>
+    </div>
+
+    <div id="classifier-overlay" class="compare-overlay">
+      <div class="compare-box classifier-box">
+        <button id="classifier-close" class="info-close" aria-label="Cerrar">×</button>
+        <div class="compare-eyebrow">CLASIFICADOR · ROCOSOS VS GIGANTES</div>
+        <h3 class="missions-title">Arrastra (o toca) cada planeta a su categoría</h3>
+
+        <div id="classifier-pool" class="classifier-pool"></div>
+
+        <div class="classifier-bins">
+          <div class="classifier-bin" id="bin-rocky">
+            <div class="classifier-bin-title">🪨 Rocosos</div>
+            <div class="classifier-bin-drop" id="bin-rocky-drop" data-category="rocky"></div>
+          </div>
+          <div class="classifier-bin" id="bin-giant">
+            <div class="classifier-bin-title">🌀 Gigantes gaseosos</div>
+            <div class="classifier-bin-drop" id="bin-giant-drop" data-category="giants"></div>
+          </div>
+        </div>
+
+        <div id="classifier-feedback" class="classifier-feedback"></div>
+        <button id="classifier-check" class="onboarding-next classifier-check-btn">Verificar</button>
+      </div>
+    </div>
+
+    <div id="impact-overlay" class="compare-overlay">
+      <div class="compare-box missions-box">
+        <button id="impact-close" class="info-close" aria-label="Cerrar">×</button>
+        <div class="compare-eyebrow">MODO IMPACTO · SIMULACIÓN</div>
+        <h3 class="missions-title">Elige el cuerpo objetivo</h3>
+        <label for="impact-select" class="sr-only">Elegir cuerpo objetivo</label>
+        <select id="impact-select" class="impact-select"></select>
+        <button id="impact-start" class="onboarding-next">Simular impacto</button>
+      </div>
+    </div>
+
+    <div id="impact-caption" class="impact-caption"></div>
+
+    <div class="help">
+      <div class="help-title">CONTROLES</div>
+
+      <div class="help-row">
+        <span class="help-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="3" width="12" height="18" rx="6"></rect>
+            <line x1="12" y1="7" x2="12" y2="11"></line>
+          </svg>
+        </span>
+        <span class="help-text"><b>Arrastra</b> para orbitar la cámara</span>
+      </div>
+
+      <div class="help-row">
+        <span class="help-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="3" width="12" height="18" rx="6"></rect>
+            <circle cx="12" cy="8" r="1.5" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </span>
+        <span class="help-text"><b>Rueda</b> para acercar / alejar</span>
+      </div>
+
+      <div class="help-row">
+        <span class="help-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"></path>
+            <path d="M12 11V4.5a1.5 1.5 0 0 1 3 0V11"></path>
+            <path d="M15 11.5V6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4 13.8c-.5-.8-.2-1.8.6-2.2.7-.4 1.6-.2 2 .4L8 13"></path>
+          </svg>
+        </span>
+        <span class="help-text"><b>Clic</b> en un planeta para inspeccionarlo</span>
+      </div>
+    </div>
+
+    <button id="fps-exit" class="fps-exit">✕ Salir de vista en primera persona</button>
+
+    <div id="onboarding-overlay" class="compare-overlay">
+      <div class="compare-box onboarding-box">
+        <div class="compare-eyebrow">BIENVENIDO</div>
+
+        <div class="onboarding-dots" id="onboarding-dots"></div>
+
+        <h3 id="onboarding-title" class="onboarding-title"></h3>
+        <p id="onboarding-desc" class="onboarding-desc"></p>
+
+        <div class="onboarding-nav">
+          <button id="onboarding-skip" class="onboarding-skip">Omitir</button>
+          <button id="onboarding-next" class="onboarding-next">Siguiente</button>
+        </div>
+      </div>
+    </div>
+
+
+    <button id="tour-badge" class="tour-badge" type="button" title="Información del tour">i</button>
+
+        <div id="quiz-overlay" class="compare-overlay">
+      <div class="compare-box quiz-box">
+        <button id="quiz-close" class="info-close" aria-label="Cerrar">×</button>
+        <div class="compare-eyebrow">EXAMEN · SISTEMA SOLAR</div>
+
+        <div class="quiz-progress">
+          <div id="quiz-progress-bar" class="quiz-progress-bar"></div>
+        </div>
+
+        <div class="quiz-meta">
+          <span id="quiz-counter"></span>
+          <span id="quiz-score-modal"></span>
+        </div>
+
+        <h3 id="quiz-question" class="quiz-question"></h3>
+
+        <div id="quiz-options" class="quiz-options"></div>
+
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+      </div>
+    </div>
+
+    <div class="controls-dock">
+      <div class="controls-primary">
+        <button id="btn-play" class="control-labeled active" title="Pausar / Reanudar">
+          <span class="control-labeled-icon">⏸</span>
+          <span class="control-labeled-text">
+            <strong id="btn-play-title">Pausar</strong>
+            <small>Simulación</small>
+          </span>
+        </button>
+        <button id="btn-orbits" class="control-labeled active" title="Mostrar / ocultar órbitas">
+          <span class="control-labeled-icon">◯</span>
+          <span class="control-labeled-text">
+            <strong>Órbitas</strong>
+            <small id="btn-orbits-sub">Activadas</small>
+          </span>
+        </button>
+        <button id="btn-labels" class="control-labeled active" title="Mostrar / ocultar etiquetas">
+          <span class="control-labeled-icon">Aa</span>
+          <span class="control-labeled-text">
+            <strong>Etiquetas</strong>
+            <small id="btn-labels-sub">Activadas</small>
+          </span>
+        </button>
+        <button id="btn-reset" class="control-labeled" title="Restablecer vista">
+          <span class="control-labeled-icon">↻</span>
+          <span class="control-labeled-text">
+            <strong>Restablecer</strong>
+            <small>Vista</small>
+          </span>
+        </button>
+      </div>
+
+      <div class="controls">
+        <button id="btn-temp-chart" class="control" title="Comparador de temperaturas">🌡️</button>
+        <button id="btn-tour" class="control" title="Tour guiado automático">🚀</button>
+        <button id="btn-quiz" class="control" title="Modo examen">📝</button>
+        <span class="control-divider"></span>
+        <button id="filter-all" class="control active" title="Mostrar todos los planetas">🪐</button>
+        <button id="filter-rocky" class="control" title="Resaltar solo planetas rocosos">🪨</button>
+        <button id="filter-giants" class="control" title="Resaltar solo gigantes gaseosos">🌀</button>
+        <span class="control-divider"></span>
+        <button id="btn-classifier" class="control" title="Clasificador interactivo">🧩</button>
+        <button id="btn-impact" class="control" title="Modo impacto">💥</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
